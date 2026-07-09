@@ -11,8 +11,20 @@ class CompetitionService:
     def __init__(self, repository: CompetitionRepository):
         self.repository = repository
 
-    def list_competitions(self, page: int, page_size: int):
-        return self.repository.list(page=page, page_size=page_size)
+    def list_competitions(
+        self,
+        page: int,
+        page_size: int,
+        sport: str | None = None,
+        country: str | None = None,
+    ):
+        # Service coordinates the request and delegates DB work to repository.
+        return self.repository.list(
+            page=page,
+            page_size=page_size,
+            sport=sport,
+            country=country,
+        )
 
     def get_competition(self, competition_id: uuid.UUID):
         competition = self.repository.get_by_id(competition_id)
