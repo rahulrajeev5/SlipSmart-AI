@@ -12,23 +12,50 @@ class CompetitionRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def list(self, page: int, page_size: int) -> list[Competition]:
+# Principle: Repository Pattern
+# Responsibility: Only communicate with the database.
+# No HTTP logic.
+# No business logic.
+
+    def list(
+        self,
+        page: int,
+        page_size: int,
+        sport: Optional[str] = None,
+        country: Optional[str] = None,
+    ) -> tuple[list[Competition], int]:
+        # Pagination offset.
         offset = (page - 1) * page_size
 
-        return (
-            self.db.query(Competition)
-            .order_by(Competition.created_at.desc())
+        # Start query. SQL is not executed yet.
+        query = self.db.query(Competition)
+
+        # Filter by sport if provided.
+        if sport:
+            query = query.filter(Competition.sport == sport)
+
+        if country:
+            query = query.filter(Competition.country == country)
+
+        # Count total records after filters.
+        total = query.count()
+
+        # Fetch only current page records.
+        items = (
+            query.order_by(Competition.created_at.desc())
             .offset(offset)
             .limit(page_size)
             .all()
         )
 
+        return items, total
+            
     def get_by_id(self, competition_id: uuid.UUID) -> Optional[Competition]:
-        return (
-            self.db.query(Competition)
-            .filter(Competition.id == competition_id)
-            .first()
-        )
+            return (
+                self.db.query(Competition)
+                .filter(Competition.id == competition_id)
+                .first()
+            )
 
     def create(self, payload: CompetitionCreate) -> Competition:
         competition = Competition(**payload.model_dump())

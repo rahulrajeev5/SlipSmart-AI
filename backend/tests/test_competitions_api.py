@@ -30,7 +30,14 @@ def test_list_competitions():
     response = client.get("/competitions")
 
     assert response.status_code == 200
-    assert isinstance(response.json(), list)
+
+    data = response.json()
+    assert "items" in data
+    assert "total" in data
+    assert "page" in data
+    assert "page_size" in data
+    assert "total_pages" in data
+    assert isinstance(data["items"], list)
 
 
 def test_get_competition_not_found():
