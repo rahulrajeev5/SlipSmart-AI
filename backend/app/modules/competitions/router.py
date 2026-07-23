@@ -20,6 +20,7 @@ from fastapi import APIRouter, Depends, Query, Response, status
 from sqlalchemy.orm import Session
 from app.common.enums import Sport
 from typing import Optional
+from app.common.schemas import PaginatedResponse
 
 from app.db.session import get_db
 from app.modules.competitions.repository import CompetitionRepository
@@ -38,7 +39,7 @@ def get_service(db: Session = Depends(get_db)) -> CompetitionService:
     return CompetitionService(repository)
 
 
-@router.get("", response_model=list[CompetitionResponse])
+@router.get("", response_model=PaginatedResponse[CompetitionResponse])
 def list_competitions(
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=20, ge=1, le=100),

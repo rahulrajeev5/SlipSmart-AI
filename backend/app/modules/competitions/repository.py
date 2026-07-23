@@ -23,8 +23,8 @@ class CompetitionRepository:
         page_size: int,
         sport: Optional[str] = None,
         country: Optional[str] = None,
-    ) -> list[Competition]:
-        # Pagination: calculate how many rows to skip.
+    ) -> tuple[list[Competition], int]:
+        # Pagination offset.
         offset = (page - 1) * page_size
 
         # Start query. SQL is not executed yet.
@@ -34,18 +34,22 @@ class CompetitionRepository:
         if sport:
             query = query.filter(Competition.sport == sport)
 
-        # Filter by country if provided.
         if country:
             query = query.filter(Competition.country == country)
 
-        # Execute query with sorting, pagination, and limit.
-        return (
+        # Count total records after filters.
+        total = query.count()
+
+        # Fetch only current page records.
+        items = (
             query.order_by(Competition.created_at.desc())
             .offset(offset)
             .limit(page_size)
             .all()
         )
-        
+
+        return items, total
+            
     def get_by_id(self, competition_id: uuid.UUID) -> Optional[Competition]:
             return (
                 self.db.query(Competition)
